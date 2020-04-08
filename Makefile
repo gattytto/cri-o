@@ -85,12 +85,10 @@ GO_FILES := $(shell find . -type f -name '*.go' -not -name '*_test.go')
 
 # Update VPATH so make finds .gopathok
 VPATH := $(VPATH):$(GOPATH)
-SHRINKFLAGS := -s -w
 VERSION := $(shell $(GO_RUN) ./scripts/latest-version)
 DEFAULTS_PATH := ""
 
-BASE_LDFLAGS = ${SHRINKFLAGS} \
-	-X ${PROJECT}/internal/pkg/criocli.DefaultsPath=${DEFAULTS_PATH} \
+BASE_LDFLAGS := -compressdwarf=false -X ${PROJECT}/internal/pkg/criocli.DefaultsPath=${DEFAULTS_PATH} \
 	-X ${PROJECT}/internal/version.buildDate=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ') \
 	-X ${PROJECT}/internal/version.gitCommit=${COMMIT_NO} \
 	-X ${PROJECT}/internal/version.gitTreeState=${GIT_TREE_STATE} \
@@ -151,7 +149,7 @@ test/checkseccomp/checkseccomp: $(GO_FILES) .gopathok
 	$(GO_BUILD) $(LDFLAGS) -tags "$(BUILDTAGS)" -o $@ $(PROJECT)/test/checkseccomp
 
 bin/crio: $(GO_FILES) .gopathok
-	$(GO_BUILD) $(LDFLAGS) -tags "$(BUILDTAGS)" -o $@ $(PROJECT)/cmd/crio
+	$(GO_BUILD) -gcflags '-N -l' $(LDFLAGS) -tags "$(BUILDTAGS)" -o $@ $(PROJECT)/cmd/crio
 
 bin/crio-status: $(GO_FILES) .gopathok
 	$(GO_BUILD) $(LDFLAGS) -tags "$(BUILDTAGS)" -o $@ $(PROJECT)/cmd/crio-status
